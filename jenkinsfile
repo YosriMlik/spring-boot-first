@@ -5,7 +5,7 @@ pipeline {
         DOCKER_IMAGE_NAME = 'yosrimlik/spring-boot-first' // Docker Hub image name
         DOCKER_IMAGE_TAG = 'latest' // Docker image tag
         DOCKER_COMPOSE_PATH = '.' // Docker Compose file is in the project root
-        REMOTE_USER = 'ubuntu-server' // Remote server username
+        REMOTE_USER = 'ubuntu-server' // Remote server usernamee
         REMOTE_HOST = '192.168.11.132' // Remote server IP or hostname
     }
 
