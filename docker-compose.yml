@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes' # Allow empty password for root
+      MYSQL_DATABASE: mydb
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+  spring-boot-app:
+    image: yosrimlik/spring-boot-first:latest
+    container_name: spring-boot-app
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/mydb?serverTimezone=UTC&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ''
+    volumes:
+      - ./src/main/resources/application.properties:/app/config/application.properties # Bind mount
+    depends_on:
+      - mysql-db
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+    command: ["java", "-jar", "app.war", "--spring.config.location=file:/app/config/application.properties"]
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,0 +1,31 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Comptes Management</title>
+</head>
+
+<body>
+	<h1>Edit Compte with rib= <span th:text="${compte.rib}"></span></h1>
+	<form th:action="@{update}" method="POST">
+		<table>
+			<tr>
+				<td>rib</td>
+				<td><input type="number" name="rib" th:value="${compte.rib}" readonly/></td>
+			</tr>
+			<tr>
+				<td>nom</td>
+				<td><input type="text" name="nom" th:value="${compte.nom}" /></td>
+			</tr>
+			<tr>
+				<td>solde</td>
+				<td><input type="text" name="solde" th:value="${compte.solde}"/></td>
+			</tr>
+			<tr>
+				<td><input type="submit" value="update" /></td>
+				<td></td>
+			</tr>
+		</table>
+	</form>
+	<hr />
+	
+</html>

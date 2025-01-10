@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE_NAME = 'yosrimlik/spring-boot-first' // Docker Hub image name
+        DOCKER_IMAGE_TAG = 'latest' // Docker image tag
+        DOCKER_COMPOSE_PATH = '.' // Docker Compose file is in the project root
+        REMOTE_USER = 'ubuntu-server' // Remote server username
+        REMOTE_HOST = '192.168.11.132' // Remote server IP or hostname
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/YosriMlik/spring-boot-first.git' // Your Git repo URL
+            }
+        }
+
+        stage('Build Maven Project') {
+            steps {
+                sh 'mvn clean package' // Build the Spring Boot application
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker-compose build' // Build the Docker image using docker-compose
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
+                    sh '''
+                        echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+                        docker-compose push
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Remote Server') {
+            steps {
+                echo 'Deploying Docker container to remote server...'
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'vm2-ssh', // Use the ID of the SSH credentials
+                    keyFileVariable: 'SSH_KEY'
+                )]) {
+                    sh """
+                        ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
+                        cd ${DOCKER_COMPOSE_PATH}
+                        docker-compose down || true # Clean up old containers
+                        docker-compose pull
+                        docker-compose up -d
+                        EOF
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment successful!'
+        }
+        failure {
+            echo 'Deployment failed!'
+        }
+    }
+}
