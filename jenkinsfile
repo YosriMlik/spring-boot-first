@@ -54,7 +54,6 @@ pipeline {
                 )]) {
                     sh """
                         ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} '
-                            cd ${DOCKER_COMPOSE_PATH}
                             docker-compose down || true
                             docker-compose pull
                             docker-compose up -d
