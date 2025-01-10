@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'JDK'
+        maven 'Maven 3.9.9'
+    }
+
+
     environment {
         DOCKER_IMAGE_NAME = 'yosrimlik/spring-boot-first' // Docker Hub image name
         DOCKER_IMAGE_TAG = 'latest' // Docker image tag
