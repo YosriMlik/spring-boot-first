@@ -24,7 +24,7 @@ pipeline {
 
         stage('Build Maven Project') {
             steps {
-                sh 'mvn clean package -DskipTests'  // Build the Spring Boot applicationn
+                sh 'mvn clean package -DskipTests'  // Build the Spring Boot application
             }
         }
 
