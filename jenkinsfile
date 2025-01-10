@@ -51,7 +51,7 @@ stage('Deploy to Remote Server') {
     steps {
         echo 'Deploying Docker container to remote server...'
         withCredentials([sshUserPrivateKey(
-            credentialsId: 'vm2-ssh', // Use the ID of the SSH credentials
+            credentialsId: 'vm2-ssh', // Use the ID of the SSH credentials -
             keyFileVariable: 'SSH_KEY'
         )]) {
             sh """
