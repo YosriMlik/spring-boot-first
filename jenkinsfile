@@ -21,7 +21,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/YosriMlik/spring-boot-first.git' // Your Git repo URL
             }
         }
-
+/*
         stage('Build Maven Project') {
             steps {
                 sh 'mvn clean package -DskipTests'  // Build the Spring Boot application
@@ -46,63 +46,55 @@ pipeline {
                 }
             }
         }
-
+*/
 stage('Deploy to Remote Server') {
     steps {
         echo 'Deploying Docker container to remote server...'
         withCredentials([sshUserPrivateKey(
-            credentialsId: 'vm2-ssh', // Use the ID of the SSH credentials -
+            credentialsId: 'vm2-ssh', // Use the ID of the SSH credentials
             keyFileVariable: 'SSH_KEY'
         )]) {
-            sh """
-                ssh -i ${SSH_KEY} -o StrictHostKeyTesting=no ${REMOTE_USER}@${REMOTE_HOST} '
-                    # Pull the MySQL image
-                    docker pull mysql:8.0
+            script {
+                // Define your docker-compose content as a string
+                def dockerComposeContent = """
+                version: '3.8'
+                services:
+                  mysql:
+                    image: mysql:latest
+                    container_name: mysql_container
+                    environment:
+                      MYSQL_ROOT_PASSWORD: rootpassword
+                      MYSQL_DATABASE: mydatabase
+                      MYSQL_USER: user
+                      MYSQL_PASSWORD: password
+                    ports:
+                      - "3306:3306"
 
-                    # Pull the Spring Boot app image
-                    docker pull yosrimlik/spring-boot-first:latest
-
-                    # Create a minimal docker-compose.yml file
-                    echo "
-                        version: '3.8'
-                        services:
-                          mysql-db:
-                            image: mysql:8.0
-                            container_name: mysql-db
-                            environment:
-                              MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-                              MYSQL_DATABASE: mydb
-                            ports:
-                              - \"3306:3306\"
-                            networks:
-                              - app-network
-
-                          spring-boot-app:
-                            image: yosrimlik/spring-boot-first:latest
-                            container_name: spring-boot-app
-                            ports:
-                              - \"8083:8083\"
-                            environment:
-                              SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/mydb?serverTimezone=UTC&createDatabaseIfNotExist=true
-                              SPRING_DATASOURCE_USERNAME: root
-                              SPRING_DATASOURCE_PASSWORD: ''
-                            depends_on:
-                              - mysql-db
-                            networks:
-                              - app-network
-
-                        networks:
-                          app-network:
-                            driver: bridge
-                    " > docker-compose.yml
-
-                    # Run docker-compose
-                    docker-compose up -d
-                '
-            """
+                  spring_boot_app:
+                    image: yosrimlik/spring-boot-first:latest
+                    container_name: spring_boot_app
+                    depends_on:
+                      - mysql
+                    ports:
+                      - "8080:8080"
+                """
+                
+                // Save the docker-compose.yml file to the remote server
+                writeFile file: 'docker-compose.yml', text: dockerComposeContent
+                
+                sh """
+                    scp -i ${SSH_KEY} -o StrictHostKeyChecking=no docker-compose.yml ${REMOTE_USER}@${REMOTE_HOST}:~
+                    ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} '
+                        docker-compose down || true
+                        docker-compose pull
+                        docker-compose up -d
+                    '
+                """
+            }
         }
     }
 }
+
     }
 
     post {
