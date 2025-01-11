@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy the JAR/WAR file from the target directory to the container
 COPY target/*.war app.war
 
-# Expose the port your application will run on
+# Expose the port your application will run on -
 EXPOSE 8083
 
 # Command to run the application
