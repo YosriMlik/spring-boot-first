@@ -21,7 +21,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/YosriMlik/spring-boot-first.git' // Your Git repo URL
             }
         }
-/*
+
         stage('Build Maven Project') {
             steps {
                 sh 'mvn clean package -DskipTests'  // Build the Spring Boot application
@@ -46,7 +46,7 @@ pipeline {
                 }
             }
         }
-*/
+
         stage('Cleanup Old Containers and Images') {
             steps {
                 echo 'Cleaning up old Docker containers and images...'
@@ -70,7 +70,7 @@ pipeline {
                             fi
 
                             # Remove unused Docker images related to your services
-                            docker rmi -f mysql:8.0 yosrimlik/spring-boot-first:latest || true
+                            docker rmi -f yosrimlik/spring-boot-first:latest || true
 
                             # Clean up unused volumes and networks
                             docker volume prune -f
@@ -87,7 +87,7 @@ pipeline {
                 }
             }
         }
-/*
+
         stage('Deploy to Remote Server') {
             steps {
                 echo 'Deploying Docker container to remote server...'
@@ -147,7 +147,7 @@ networks:
             }
         }
     }
-}*/
+}
 
 
     }
